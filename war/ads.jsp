@@ -100,7 +100,7 @@
 	</div>
 	<br>
 	<br>
-	<form action="/searchAds" method="post">
+	<form>
 		<fieldset>
 			<legend>Search an ad : </legend>
 			<div>
