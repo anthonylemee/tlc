@@ -2,7 +2,6 @@ package com.istic.tlc.tp1;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.logging.Logger;
 
 import javax.jdo.PersistenceManager;
 import javax.servlet.http.HttpServlet;
@@ -13,11 +12,9 @@ import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 
-
 public class SignGuestbookServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
-	private static final Logger log = Logger.getLogger(SignGuestbookServlet.class.getName());
 
     public void doPost(HttpServletRequest req, HttpServletResponse resp)
                 throws IOException {
