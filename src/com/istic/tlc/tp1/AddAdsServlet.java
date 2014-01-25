@@ -39,7 +39,6 @@ public class AddAdsServlet extends HttpServlet {
 		} finally {
 			pm.close();
 		}
-
 		resp.sendRedirect("/ads.jsp");
 	}
 }

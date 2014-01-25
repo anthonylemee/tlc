@@ -8,6 +8,7 @@
 <%@ page import="com.istic.tlc.tp1.PMF"%>
 <%@page import="java.text.DateFormat"%>
 <%@page import="java.util.Date"%>
+<%@page import="javax.jdo.*"%>
 
 <html>
 <head>
@@ -17,8 +18,8 @@
 
 	<%
 		UserService userService = UserServiceFactory.getUserService();
-		User user = userService.getCurrentUser();
-		if (user != null) {
+			User user = userService.getCurrentUser();
+			if (user != null) {
 	%>
 	<p>
 		Hello,
@@ -40,11 +41,11 @@
 
 	<%
 		PersistenceManager pm = PMF.get().getPersistenceManager();
-		String query = "select from " + Ad.class.getName()
-				+ " order by date desc range 0,5";
-		List<Ad> ads = (List<Ad>) pm.newQuery(query).execute();
-		DateFormat shortDF = DateFormat.getDateInstance(DateFormat.SHORT);
-		if (ads.isEmpty()) {
+			String query = "select from " + Ad.class.getName()
+			+ " order by date desc range 0,5";
+			List<Ad> ads = (List<Ad>) pm.newQuery(query).execute();
+			DateFormat shortDF = DateFormat.getDateInstance(DateFormat.SHORT);
+			if (ads.isEmpty()) {
 	%>
 	<p>There are no ads which have been added</p>
 	<%
@@ -80,7 +81,6 @@
 	</fieldset>
 	<%
 		}
-		pm.close();
 	%>
 
 	<br>
@@ -89,9 +89,10 @@
 		<fieldset>
 			<legend>Save an ad : </legend>
 			<div>
-				<label>title</label> <input type="text" size="50" required="required" name="title" /> <label>Price</label>
-				<input type="number" required="required" min="0" size="50" name="price" step="any"
-					placeholder="in €" /> <input type="submit" value="Add" />
+				<label>title</label> <input type="text" size="50"
+					required="required" name="title" /> <label>Price</label> <input
+					type="number" required="required" min="0" size="50" name="price"
+					step="any" placeholder="in €" /> <input type="submit" value="Add" />
 			</div>
 		</fieldset>
 	</form>
@@ -106,17 +107,68 @@
 			<div>
 				<label>contains in description </label> <input type="text" size="50"
 					name="title" /> <br> <label>Price between </label> <input
-					type="number" min="0" size="50" name="price" step="any"
+					type="number" min="0" size="50" name="priceBegin" step="any"
 					placeholder="in €" /> <label> and </label> <input type="number"
-					min="0" size="50" name="price" step="any" placeholder="in €" /> <br>
+					min="0" size="50" name="priceEnd" step="any" placeholder="in €" /> <br>
 				<label>dates between </label> <input type="date" size="50"
 					name="dateDebut" /> <label> and </label> <input type="date"
 					size="50" name="dateFin" /> <br> <label>You know the
 					person which posted it ? </label> <input type="text" size="50" name="email" />
 			</div>
-			<br>
-			<input type="submit" value="search" />
+			<br> <input type="submit" value="search" onclick="searchAll()" />
 		</fieldset>
 	</form>
+	<script type="text/javascript">
+		function searchAll() {
+			<% System.out.println("o");
+				String s = request.getParameter("title");
+				String price1 = request.getParameter("priceBegin");
+				String price2 = request.getParameter("priceEnd");
+				String dateDebut = request.getParameter("dateDebut");
+				String dateFin = request.getParameter("dateFin");
+				String email = request.getParameter("email");
+				
+				query = "select from " + Ad.class.getName();
+				
+				Query q = pm.newQuery(query);
+				
+				if(s != "" && s != null){
+					q.setFilter("title contains "+ s);
+				}
+				
+				if(price1 != null && price2 != null && price1 != "" && price2 != ""){
+					float un ;
+					float deux ;
+					try {
+						un = Float.parseFloat(price1);
+						deux = Float.parseFloat(price2);
+						q.setFilter("price between " + un + " and " + deux);
+					} catch (Exception e) {}
+				}
+				
+				if(dateDebut != null && dateFin != null && dateDebut != "" && dateFin != ""){
+					Date debut ;
+					Date fin ;
+					try {
+						debut = shortDF.parse(dateDebut);
+						fin = shortDF.parse(dateFin);
+						q.setFilter("date between " + debut + " and " + fin);
+					} catch (Exception e) {}
+				}
+				
+				if(email != "" && email != null){
+					q.setFilter("author contains "+ email);
+				}
+				
+				ads = (List<Ad>) q.execute();
+				
+				for (Ad a : ads) {
+					System.out.println(a.getTitle());
+				}
+			%>
+
+			pm.close();
+		}
+	</script>
 </body>
 </html>
