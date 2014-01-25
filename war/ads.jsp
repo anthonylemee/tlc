@@ -1,3 +1,4 @@
+<%@page import="java.util.ArrayList"%>
 <%@ page contentType="text/html;charset=UTF-8" language="java"%>
 <%@ page import="java.util.List"%>
 <%@ page import="javax.jdo.PersistenceManager"%>
@@ -18,8 +19,8 @@
 
 	<%
 		UserService userService = UserServiceFactory.getUserService();
-			User user = userService.getCurrentUser();
-			if (user != null) {
+		User user = userService.getCurrentUser();
+		if (user != null) {
 	%>
 	<p>
 		Hello,
@@ -41,11 +42,11 @@
 
 	<%
 		PersistenceManager pm = PMF.get().getPersistenceManager();
-			String query = "select from " + Ad.class.getName()
-			+ " order by date desc range 0,5";
-			List<Ad> ads = (List<Ad>) pm.newQuery(query).execute();
-			DateFormat shortDF = DateFormat.getDateInstance(DateFormat.SHORT);
-			if (ads.isEmpty()) {
+		String query = "select from " + Ad.class.getName()
+		+ " order by date desc range 0,5";
+		List<Ad> ads = (List<Ad>) pm.newQuery(query).execute();
+		DateFormat shortDF = DateFormat.getDateInstance(DateFormat.SHORT);
+		if (ads.isEmpty()) {
 	%>
 	<p>There are no ads which have been added</p>
 	<%
@@ -109,8 +110,8 @@
 					name="title" /> <br> <label>Price between </label> <input
 					type="number" min="0" size="50" name="priceBegin" step="any"
 					placeholder="in €" /> <label> and </label> <input type="number"
-					min="0" size="50" name="priceEnd" step="any" placeholder="in €" /> <br>
-				<label>dates between </label> <input type="date" size="50"
+					min="0" size="50" name="priceEnd" step="any" placeholder="in €" />
+				<br> <label>dates between </label> <input type="date" size="50"
 					name="dateDebut" /> <label> and </label> <input type="date"
 					size="50" name="dateFin" /> <br> <label>You know the
 					person which posted it ? </label> <input type="text" size="50" name="email" />
@@ -120,8 +121,7 @@
 	</form>
 	<script type="text/javascript">
 		function searchAll() {
-			<% System.out.println("o");
-				String s = request.getParameter("title");
+	<%String s = request.getParameter("title");
 				String price1 = request.getParameter("priceBegin");
 				String price2 = request.getParameter("priceEnd");
 				String dateDebut = request.getParameter("dateDebut");
@@ -129,45 +129,77 @@
 				String email = request.getParameter("email");
 				
 				query = "select from " + Ad.class.getName();
+				ArrayList<Object> args = new ArrayList<Object>(); 
 				
 				Query q = pm.newQuery(query);
+				int nbParam = 0;
 				
 				if(s != "" && s != null){
-					q.setFilter("title contains "+ s);
+					q.setFilter("title == titre");
+					q.declareParameters("String titre");
+					args.add(s);
+					nbParam ++;
 				}
 				
-				if(price1 != null && price2 != null && price1 != "" && price2 != ""){
+				if(price1 != null && price1 != ""){
 					float un ;
-					float deux ;
 					try {
 						un = Float.parseFloat(price1);
-						deux = Float.parseFloat(price2);
-						q.setFilter("price between " + un + " and " + deux);
+						q.setFilter("price > min");
+						q.declareParameters("double min");
+						args.add(un);
+						nbParam ++;
 					} catch (Exception e) {}
 				}
 				
-				if(dateDebut != null && dateFin != null && dateDebut != "" && dateFin != ""){
+				if(price2 != null && price2 != ""){
+					float deux ;
+					try {
+						deux = Float.parseFloat(price2);
+						q.setFilter("price < max");
+						q.declareParameters("double max");
+						args.add(deux);
+						nbParam ++;
+					} catch (Exception e) {}
+				}
+				
+				if(dateDebut != null && dateDebut != ""){
 					Date debut ;
 					Date fin ;
 					try {
+						System.out.println(q.toString());
 						debut = shortDF.parse(dateDebut);
+						q.setFilter("date > debutt");
+						q.declareParameters("Date debutt");
+						args.add(debut);
+						nbParam ++;
+					} catch (Exception e) {}
+				}
+				
+				if(dateFin != null && dateFin != ""){
+					Date fin ;
+					try {
 						fin = shortDF.parse(dateFin);
-						q.setFilter("date between " + debut + " and " + fin);
+						q.setFilter("date < final");
+						q.declareParameters("Date final");
+						args.add(fin);
+						nbParam ++;
 					} catch (Exception e) {}
 				}
 				
 				if(email != "" && email != null){
-					q.setFilter("author contains "+ email);
+					q.setFilter("author == auth");
+					q.declareParameters("String auth");
+					args.add(email);
+					nbParam ++;
 				}
 				
+				System.out.println(q.toString());
 				ads = (List<Ad>) q.execute();
-				
 				for (Ad a : ads) {
-					System.out.println(a.getTitle());
-				}
-			%>
-
-			pm.close();
+					System.out.println(a.getPrice());
+				}%>
+		pm.close();
 		}
 	</script>
 </body>
