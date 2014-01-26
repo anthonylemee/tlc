@@ -8,7 +8,9 @@
 <%@ page import="com.istic.tlc.tp1.Ad"%>
 <%@ page import="com.istic.tlc.tp1.PMF"%>
 <%@page import="java.text.DateFormat"%>
+<%@page import="java.text.SimpleDateFormat"%>
 <%@page import="java.util.Date"%>
+<%@page import="java.util.HashMap"%>
 <%@page import="javax.jdo.*"%>
 
 <html>
@@ -45,7 +47,7 @@
 		String query = "select from " + Ad.class.getName()
 		+ " order by date desc range 0,5";
 		List<Ad> ads = (List<Ad>) pm.newQuery(query).execute();
-		DateFormat shortDF = DateFormat.getDateInstance(DateFormat.SHORT);
+		DateFormat shortDF = new SimpleDateFormat("yyyy-mm-dd");
 		if (ads.isEmpty()) {
 	%>
 	<p>There are no ads which have been added</p>
@@ -119,6 +121,7 @@
 			<br> <input type="submit" value="search" onclick="searchAll()" />
 		</fieldset>
 	</form>
+	<div id=searchResult></div>
 	<script type="text/javascript">
 		function searchAll() {
 	<%String s = request.getParameter("title");
@@ -129,26 +132,23 @@
 				String email = request.getParameter("email");
 				
 				query = "select from " + Ad.class.getName();
-				ArrayList<Object> args = new ArrayList<Object>(); 
-				
-				Query q = pm.newQuery(query);
-				int nbParam = 0;
-				
+				HashMap<String,Object> args = new HashMap<String,Object>();
+				ArrayList<String> newQuery = new ArrayList<String>();
+				ArrayList<String> parameters = new ArrayList<String>();
+								
 				if(s != "" && s != null){
-					q.setFilter("title == titre");
-					q.declareParameters("String titre");
-					args.add(s);
-					nbParam ++;
+					parameters.add("String titre");
+					newQuery.add("title == titre");
+					args.put("titre",s);
 				}
 				
 				if(price1 != null && price1 != ""){
 					float un ;
 					try {
 						un = Float.parseFloat(price1);
-						q.setFilter("price > min");
-						q.declareParameters("double min");
-						args.add(un);
-						nbParam ++;
+						args.put("min",un);
+						parameters.add("double min");
+						newQuery.add("price > min");
 					} catch (Exception e) {}
 				}
 				
@@ -156,49 +156,68 @@
 					float deux ;
 					try {
 						deux = Float.parseFloat(price2);
-						q.setFilter("price < max");
-						q.declareParameters("double max");
-						args.add(deux);
-						nbParam ++;
+						parameters.add("double max");
+						args.put("max",deux);
+						newQuery.add("price < max");
 					} catch (Exception e) {}
 				}
 				
 				if(dateDebut != null && dateDebut != ""){
 					Date debut ;
-					Date fin ;
 					try {
-						System.out.println(q.toString());
 						debut = shortDF.parse(dateDebut);
-						q.setFilter("date > debutt");
-						q.declareParameters("Date debutt");
-						args.add(debut);
-						nbParam ++;
-					} catch (Exception e) {}
+						parameters.add("Date debut");
+						args.put("debut",debut);
+						newQuery.add("date > debut");
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
 				
 				if(dateFin != null && dateFin != ""){
 					Date fin ;
 					try {
 						fin = shortDF.parse(dateFin);
-						q.setFilter("date < final");
-						q.declareParameters("Date final");
-						args.add(fin);
-						nbParam ++;
-					} catch (Exception e) {}
+						parameters.add("Date final");
+						args.put("final",fin);
+						newQuery.add("date < final");
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
 				
 				if(email != "" && email != null){
-					q.setFilter("author == auth");
-					q.declareParameters("String auth");
-					args.add(email);
-					nbParam ++;
+					parameters.add("String auth");
+					args.put("auth",email);
+					newQuery.add("author == auth");
 				}
 				
-				System.out.println(q.toString());
-				ads = (List<Ad>) q.execute();
-				for (Ad a : ads) {
-					System.out.println(a.getPrice());
-				}%>
+				for (int i = 0; i < newQuery.size(); i++ ){
+					if( i == 0){
+						query = query + " WHERE " + newQuery.get(i) ;
+					} else {
+						query = query + " && " + newQuery.get(i) ;
+					}
+				}
+				
+				Query q = pm.newQuery(query);
+				String par = "";
+				for (int j = 0; j < parameters.size(); j++ ){
+					if(j == 0){
+						par = parameters.get(0);
+					} else {
+						par = par + " , " + parameters.get(j);
+					}
+				}
+				q.declareParameters(par);				
+				q.declareImports("import java.util.Date");
+				ads = (List<Ad>) q.executeWithMap(args);%>
+		document.getElementById('searchResult').innerHTML = '<table border="1" cellpadding="0" cellspacing="0">'
+					+ '<tr><th>Descriptif</th><th>Auteur</th><th>Date</th><th>Prix</th></tr>';
+	<%for (Ad a : ads) {
+	%>	
+		document.getElementById('searchResult').innerHTML += '<tr><td>'<%=a.getTitle()%>'</td><td>'<%=a.getAuthor().getNickname()%>'</td><td>'<%=a.getDate()%>'</td><td>'<%=a.getPrice()%>'</td></tr>';
+	<%}%>
 		pm.close();
 		}
 	</script>
