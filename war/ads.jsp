@@ -127,7 +127,6 @@
 					&& document.getElementById('title'+j).value != ""
 					&& document.getElementById('price'+j).value != ""){
 
-				alert("ok pour les champs  :  " + 'price'+j);
 				tabTitle.push(document.getElementById('title'+j).value);
 				tabPrice.push(document.getElementById('price'+j).value);
 			}

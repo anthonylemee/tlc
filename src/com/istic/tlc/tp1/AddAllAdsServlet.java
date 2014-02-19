@@ -2,6 +2,7 @@ package com.istic.tlc.tp1;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
@@ -35,11 +36,11 @@ public class AddAllAdsServlet extends HttpServlet {
 		userService = UserServiceFactory.getUserService();
 		user = userService.getCurrentUser();
 		
-		Enumeration<String> NomsParam = req.getParameterNames();
+		List<String> liste = Collections.list(req.getParameterNames());
 		
 		try {
-			ValeursTitres = req.getParameterValues(NomsParam.nextElement());
-			ValeursPrix = req.getParameterValues(NomsParam.nextElement());
+			ValeursPrix = req.getParameterValues(liste.get(0));
+			ValeursTitres = req.getParameterValues(liste.get(1));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
