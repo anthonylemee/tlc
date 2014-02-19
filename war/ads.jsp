@@ -32,82 +32,99 @@
 	$(document)
 			.ready(
 					function() {
+						$('#search').click(function() {
+								keyWords = $("#keywords").val();
+								priceMin = $("#pricemin").val();
+								priceMax = $("#pricemax").val();
+								dateMin = $("#datemin").val();
+								dateMax = $("#datemax").val();
+								sellerName = $("#seller").val();
 
-						$('#search')
-								.click(
+								$.ajax({
+											data : {
+												keywords : keyWords,
+												pricemin : priceMin,
+												pricemax : priceMax,
+												datemin : dateMin,
+												datemax : dateMax,
+												seller : sellerName
+											},
+											dataType : 'text',
+											url : '/searchAds',
+											type : 'POST',
+											success : function(
+													jsonObj) {
 
-										function() {
+												// On reset la div contenant le tableau des resultats de la recherche
+												$('#searchResult')
+														.html('');
 
-											keyWords = $("#keywords").val();
-											priceMin = $("#pricemin").val();
-											priceMax = $("#pricemax").val();
-											dateMin = $("#datemin").val();
-											dateMax = $("#datemax").val();
+												// On récupère la chaine de caractère faisant foie de JSON et correspond aux resultats retournés
+												arrayJson = JSON
+														.parse(jsonObj);
 
-											$
-													.ajax({
-														data : {
-															keywords : keyWords,
-															pricemin : priceMin,
-															pricemax : priceMax,
-															datemin : dateMin,
-															datemax : dateMax,
-														},
-														dataType : 'text',
-														url : '/searchAds',
-														type : 'POST',
-														success : function(
-																jsonObj) {
+												// On construit le contenu du tableau des résultats de la recherche
+												tableContent = '';
+												for ( var ad in arrayJson) {
+													console
+															.log(arrayJson[ad]);
+													tableContent += '<tr><td>'
+															+ arrayJson[ad].title
+															+ '</td><td>'
+															+ arrayJson[ad].author
+															+ '</td><td>'
+															+ arrayJson[ad].date
+															+ '</td><td>'
+															+ arrayJson[ad].price
+															+ '</td></tr>';
+												}
 
-															// On reset la div contenant le tableau des resultats de la recherche
-															$('#searchResult')
-																	.html('');
+												// Une fois le tableau construit on l'incorpore dans la div prévue
+												$('#searchResult')
+														.append(
+																'<div class="panel panel-default"><div class="panel-heading">Results search :</div><table class="table">'
+																		+ '<tr><th>Descriptif</th><th>Auteur</th><th>Date</th><th>Prix</th></tr></div>'
+																		+ tableContent
+																		+ '</table>');
 
-															// On récupère la chaine de caractère faisant foie de JSON et correspond aux resultats retournés
-															arrayJson = JSON
-																	.parse(jsonObj);
-
-															// On construit le contenu du tableau des résultats de la recherche
-															tableContent = '';
-															for ( var ad in arrayJson) {
-																console
-																		.log(arrayJson[ad]);
-																tableContent += '<tr><td>'
-																		+ arrayJson[ad].title
-																		+ '</td><td>'
-																		+ arrayJson[ad].author
-																		+ '</td><td>'
-																		+ arrayJson[ad].date
-																		+ '</td><td>'
-																		+ arrayJson[ad].price
-																		+ '</td></tr>';
-															}
-
-															// Une fois le tableau construit on l'incorpore dans la div prévue
-															$('#searchResult')
-																	.append(
-																			'<div class="panel panel-default"><div class="panel-heading">Results search :</div><table class="table">'
-																					+ '<tr><th>Descriptif</th><th>Auteur</th><th>Date</th><th>Prix</th></tr></div>'
-																					+ tableContent
-																					+ '</table>');
-
-														},
-														error : function() {
-															alert('Ajax readyState: '
-																	+ xhr.readyState
-																	+ '\nstatus: '
-																	+ xhr.status
-																	+ ' ' + err);
-														}
-													});
+											},
+											error : function() {
+												alert('Ajax readyState: '
+														+ xhr.readyState
+														+ '\nstatus: '
+														+ xhr.status
+														+ ' ' + err);
+											}
 										});
-					});
+							});
+		});
+
+	function del(row, id, kind){
+		$.ajax({
+			data : {
+				id : id,
+				kind : kind
+			},
+			dataType : 'text',
+			url : '/deleteAds',
+			type : 'POST',
+			success : function() {
+				alert("ok");
+				var rows = row.parentNode.parentNode;
+				rows.parentNode.removeChild(rows);
+			},
+			error : function() {
+				alert(' :( ');
+			}
+		});
+	}
 </script>
 </head>
 <body>
 
 	<%
 		UserService userService = UserServiceFactory.getUserService();
+		SimpleDateFormat formatter=new SimpleDateFormat("yyyy-MM-dd");
 		User user = userService.getCurrentUser();
 		if (user != null) {
 	%>
@@ -159,7 +176,7 @@
 	<%
 		PersistenceManager pm = PMF.get().getPersistenceManager();
 		String query = "select from " + Ad.class.getName()
-				+ " order by date desc range 0,5";
+				+ " order by date desc";
 		List<Ad> ads = (List<Ad>) pm.newQuery(query).execute();
 		DateFormat shortDF = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -171,32 +188,33 @@
 	%>
 	<div class="panel panel-default">
 		<div class="panel-heading">List of Ads :</div>
-		<table class="table">
-			<tr>
-				<th>Descriptif</th>
-				<th>Auteur</th>
-				<th>Date</th>
-				<th>Prix</th>
-			</tr>
-			<%
-				for (Ad a : ads) {
-			%><tr>
-				<td><%=a.getTitle()%></td>
-				<td>
-					<%
-						if (a.getAuthor() == null) {
-					%>Anonymous<%
-						} else
-					%><%=a.getAuthor().getNickname()%>
+			<table id="tableDeb" class="tableDeb">
+				<tr>
+					<th>Descriptif</th>
+					<th>Auteur</th>
+					<th>Date</th>
+					<th>Prix</th>
+				</tr>
+				<%
+					for (Ad a : ads) {
+				%><tr>
+					<td><%=a.getTitle()%></td>
+					<td>
+						<%
+							if (a.getAuthor() == null) {
+						%>Anonymous<%
+							} else
+						%><%=a.getAuthor().getNickname()%>
 				</td>
-				<td><%=shortDF.format(a.getDate())%></td> <!-- shortDF.format(a.getDate()) -->
+				<td><%=shortDF.format(a.getDate())%></td> 
+				<!-- shortDF.format(a.getDate()) -->
 				<td><%=a.getPrice()%> €</td>
-				
-			</tr>
-			<%
-				}
-			%>
-		</table>
+					<td><input id="delete" type="button" value="delete" onclick='del(this,<%=a.getKey().getId()%>,"<%=a.getKey().getKind()%>")'/></td>
+				</tr>
+				<%
+					}
+				%>
+			</table>
 	</div>
 	<%
 		}
