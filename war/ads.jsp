@@ -322,7 +322,7 @@
 	<div>
 		<input type="button" value="Another Ad ?" onclick="addField()" />
 		<input id="addAllBtn" type="submit" value="AddAll" disabled="disabled" onclick="addAllAds()"/>
-		<input id="perf" type="submit" value="perfTest" onclick="perfTest()"/>
+		<input id="perf" type="submit" value="perfTest" disabled="disabled" onclick="perfTest()"/>
 	</div>
 	<br>
 	<br>
