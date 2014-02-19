@@ -99,11 +99,10 @@
 							});
 		});
 
-	function del(row, id, kind){
+	function del(row, id){
 		$.ajax({
 			data : {
-				id : id,
-				kind : kind
+				id : id
 			},
 			dataType : 'text',
 			url : '/deleteAds',
@@ -116,6 +115,79 @@
 				alert(' :( ');
 			}
 		});
+	}
+
+	function addAllAds(){
+
+		var tabTitle = new Array();
+		var tabPrice = new Array();
+		for(var j = 0; j < i; j ++){
+			if(document.getElementById('title'+j) != null
+					&& document.getElementById('price'+j) != null
+					&& document.getElementById('title'+j).value != ""
+					&& document.getElementById('price'+j).value != ""){
+
+				alert("ok pour les champs  :  " + 'price'+j);
+				tabTitle.push(document.getElementById('title'+j).value);
+				tabPrice.push(document.getElementById('price'+j).value);
+			}
+		}
+		
+		$.ajax({
+			data : {
+				tabTitle : tabTitle,
+				tabPrice : tabPrice
+			},
+			dataType : 'text',
+			url : '/addAllAds',
+			type : 'POST',
+			success : function() {
+				location.reload();
+			},
+			error : function() {
+				alert(' :( ');
+			}
+		});
+	}
+
+	$(document).ready(function() {
+		document.getElementById('addAllBtn').disabled= true;
+		i = 1;
+		}
+	);
+
+	function addField() {
+		try {
+		   var labelT = document.createElement('label');
+		   var inputT = document.createElement('input');
+		   var inputP = document.createElement('label');
+		   var inputP = document.createElement('input');
+		   
+		   inputT.setAttribute('type','text');
+		   inputT.setAttribute('name','title'+i);
+		   inputT.setAttribute('id','title'+i);
+		   inputT.setAttribute('size','50');
+		   inputT.setAttribute('value','');
+
+		   inputP.setAttribute('type','number');
+		   inputP.setAttribute('min','0');
+		   inputP.setAttribute('step','any');
+		   inputP.setAttribute('name','price'+i);
+		   inputP.setAttribute('id','price'+i);
+		   inputP.setAttribute('size','50');
+		   inputP.setAttribute('placeholder','in €');
+		   inputP.setAttribute('value','');
+		   
+		   document.getElementById('otherAds').appendChild(document.createTextNode('Title'));
+		   document.getElementById('otherAds').appendChild(inputT);
+		   document.getElementById('otherAds').appendChild(document.createTextNode('Price'));
+		   document.getElementById('otherAds').appendChild(inputP);
+		   document.getElementById('otherAds').appendChild(document.createElement('br'));
+		   document.getElementById('addAllBtn').disabled= false;
+		   i ++;
+		} catch(e) {
+		   alert(e);
+		}
 	}
 </script>
 </head>
@@ -208,7 +280,7 @@
 				<td><%=shortDF.format(a.getDate())%></td> 
 				<!-- shortDF.format(a.getDate()) -->
 				<td><%=a.getPrice()%> €</td>
-					<td><input id="delete" type="button" value="delete" onclick='del(this,<%=a.getKey().getId()%>,"<%=a.getKey().getKind()%>")'/></td>
+					<td><input id="delete" type="button" value="delete" onclick='del(this,<%=a.getKey().getId()%>)'/></td>
 				</tr>
 				<%
 					}
@@ -225,15 +297,17 @@
 		<fieldset>
 			<legend>Save an ad : </legend>
 			<div>
-				<label>title</label> <input type="text" size="50"
-					required="required" name="title" /> <label>Price</label> <input
-					type="number" required="required" min="0" size="50" name="price"
+				<label>Title</label> <input type="text" size="50"
+					required="required" id="title0" name="title0" /> <label>Price</label> <input
+					type="number" id="price0" required="required" min="0" size="50" name="price0"
 					step="any" placeholder="in €" /> <input type="submit" value="Add" />
 			</div>
 		</fieldset>
 	</form>
+	<div id="otherAds"></div>
 	<div>
-		<input type="submit" value="Another Ad ?" />
+		<input type="button" value="Another Ad ?" onclick="addField()" />
+		<input id="addAllBtn" type="submit" value="AddAll" disabled="disabled" onclick="addAllAds()"/>
 	</div>
 	<br>
 	<br>

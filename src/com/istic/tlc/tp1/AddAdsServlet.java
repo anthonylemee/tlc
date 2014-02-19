@@ -21,8 +21,8 @@ public class AddAdsServlet extends HttpServlet {
 		UserService userService = UserServiceFactory.getUserService();
 		User user = userService.getCurrentUser();
 
-		String title = req.getParameter("title");
-		String p = req.getParameter("price");
+		String title = req.getParameter("title0");
+		String p = req.getParameter("price0");
 		float price = 0;
 		try {
 			price = Float.parseFloat(p);
