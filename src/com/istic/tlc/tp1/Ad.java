@@ -20,7 +20,7 @@ public class Ad {
     private User author;
 
     @Persistent
-    private String title;
+    public String title;
 
     @Persistent
     private Date date;

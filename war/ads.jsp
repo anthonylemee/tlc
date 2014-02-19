@@ -1,12 +1,12 @@
 <%@page import="java.util.ArrayList"%>
-<%@ page contentType="text/html;charset=UTF-8" language="java"%>
-<%@ page import="java.util.List"%>
-<%@ page import="javax.jdo.PersistenceManager"%>
-<%@ page import="com.google.appengine.api.users.User"%>
-<%@ page import="com.google.appengine.api.users.UserService"%>
-<%@ page import="com.google.appengine.api.users.UserServiceFactory"%>
-<%@ page import="com.istic.tlc.tp1.Ad"%>
-<%@ page import="com.istic.tlc.tp1.PMF"%>
+<%@page contentType="text/html;charset=UTF-8" language="java"%>
+<%@page import="java.util.List"%>
+<%@page import="javax.jdo.PersistenceManager"%>
+<%@page import="com.google.appengine.api.users.User"%>
+<%@page import="com.google.appengine.api.users.UserService"%>
+<%@page import="com.google.appengine.api.users.UserServiceFactory"%>
+<%@page import="com.istic.tlc.tp1.Ad"%>
+<%@page import="com.istic.tlc.tp1.PMF"%>
 <%@page import="java.text.DateFormat"%>
 <%@page import="java.text.SimpleDateFormat"%>
 <%@page import="java.util.Date"%>
@@ -16,6 +16,95 @@
 <html>
 <head>
 <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+<script src="http://code.jquery.com/jquery-latest.min.js"></script>
+<script src="http://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
+<script src="http://code.jquery.com/jquery-1.8.3.js"></script>
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet"
+	href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+<!-- Optional theme -->
+<link rel="stylesheet"
+	href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css">
+<!-- Latest compiled and minified JavaScript -->
+<script
+	src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+<script>
+	$(document)
+			.ready(
+					function() {
+
+						$('#search')
+								.click(
+
+										function() {
+
+											keyWords = $("#keywords").val();
+											priceMin = $("#pricemin").val();
+											priceMax = $("#pricemax").val();
+											dateMin = $("#datemin").val();
+											dateMax = $("#datemax").val();
+											sellerName = $("#seller").val();
+
+											$
+													.ajax({
+														data : {
+															keywords : keyWords,
+															pricemin : priceMin,
+															pricemax : priceMax,
+															datemin : dateMin,
+															datemax : dateMax,
+															seller : sellerName
+														},
+														dataType : 'text',
+														url : '/searchAds',
+														type : 'POST',
+														success : function(
+																jsonObj) {
+
+															// On reset la div contenant le tableau des resultats de la recherche
+															$('#searchResult')
+																	.html('');
+
+															// On récupère la chaine de caractère faisant foie de JSON et correspond aux resultats retournés
+															arrayJson = JSON
+																	.parse(jsonObj);
+
+															// On construit le contenu du tableau des résultats de la recherche
+															tableContent = '';
+															for ( var ad in arrayJson) {
+																console
+																		.log(arrayJson[ad]);
+																tableContent += '<tr><td>'
+																		+ arrayJson[ad].title
+																		+ '</td><td>'
+																		+ arrayJson[ad].author
+																		+ '</td><td>'
+																		+ arrayJson[ad].date
+																		+ '</td><td>'
+																		+ arrayJson[ad].price
+																		+ '</td></tr>';
+															}
+
+															// Une fois le tableau construit on l'incorpore dans la div prévue
+															$('#searchResult')
+																	.append(
+																			'<div class="panel panel-default"><div class="panel-heading">Results search :</div><table class="table">'
+																					+ '<tr><th>Descriptif</th><th>Auteur</th><th>Date</th><th>Prix</th></tr></div>'
+																					+ tableContent
+																					+ '</table>');
+
+														},
+														error : function() {
+															alert('Ajax readyState: '
+																	+ xhr.readyState
+																	+ '\nstatus: '
+																	+ xhr.status
+																	+ ' ' + err);
+														}
+													});
+										});
+					});
+</script>
 </head>
 <body>
 
@@ -24,20 +113,47 @@
 		User user = userService.getCurrentUser();
 		if (user != null) {
 	%>
-	<p>
-		Hello,
-		<%=user.getNickname()%>! (You can <a
-			href="<%=userService.createLogoutURL(request.getRequestURI())%>">sign
-			out</a>.)
-	</p>
+	<nav class="navbar navbar-default" role="navigation">
+		<div class="container-fluid">
+			<!-- Brand and toggle get grouped for better mobile display -->
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse"
+					data-target="#bs-example-navbar-collapse-1">
+					<span class="sr-only">Toggle navigation</span> <span
+						class="icon-bar"></span> <span class="icon-bar"></span> <span
+						class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="#">Ads API</a>
+				<p class="navbar-text navbar-right">
+					Signed in as <a href="#" class="navbar-link"><%=user.getNickname()%></a>!
+					(You can <a
+						href="<%=userService.createLogoutURL(request.getRequestURI())%>">sign
+						out.)</a>
+				</p>
+			</div>
+		</div>
+	</nav>
 	<%
 		} else {
 	%>
-	<p>
-		Hello! <a
-			href="<%=userService.createLoginURL(request.getRequestURI())%>">Sign
-			in</a> to include your name with greetings you post.
-	</p>
+	<nav class="navbar navbar-default" role="navigation">
+		<div class="container-fluid">
+			<!-- Brand and toggle get grouped for better mobile display -->
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse"
+					data-target="#bs-example-navbar-collapse-1">
+					<span class="sr-only">Toggle navigation</span> <span
+						class="icon-bar"></span> <span class="icon-bar"></span> <span
+						class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="#">Ads API</a>
+				<p class="navbar-text navbar-right">
+					<a href="<%=userService.createLoginURL(request.getRequestURI())%>">Sign
+						in</a> to include your name with greetings you post.
+				</p>
+			</div>
+		</div>
+	</nav>
 	<%
 		}
 	%>
@@ -45,18 +161,19 @@
 	<%
 		PersistenceManager pm = PMF.get().getPersistenceManager();
 		String query = "select from " + Ad.class.getName()
-		+ " order by date desc range 0,5";
+				+ " order by date desc range 0,5";
 		List<Ad> ads = (List<Ad>) pm.newQuery(query).execute();
 		DateFormat shortDF = new SimpleDateFormat("yyyy-mm-dd");
+
 		if (ads.isEmpty()) {
 	%>
 	<p>There are no ads which have been added</p>
 	<%
 		} else {
 	%>
-	<fieldset>
-		<legend>List of Ads</legend>
-		<table border="1" cellpadding="0" cellspacing="0">
+	<div class="panel panel-default">
+		<div class="panel-heading">List of Ads :</div>
+		<table class="table">
 			<tr>
 				<th>Descriptif</th>
 				<th>Auteur</th>
@@ -70,18 +187,19 @@
 				<td>
 					<%
 						if (a.getAuthor() == null) {
-					%>Anonymus<%
+					%>Anonymous<%
 						} else
 					%><%=a.getAuthor().getNickname()%>
 				</td>
-				<td><%=shortDF.format(a.getDate())%></td>
+				<td><%=a.getDate()%></td> <!-- shortDF.format(a.getDate()) -->
 				<td><%=a.getPrice()%> €</td>
+				
 			</tr>
 			<%
 				}
 			%>
 		</table>
-	</fieldset>
+	</div>
 	<%
 		}
 	%>
@@ -108,118 +226,26 @@
 		<fieldset>
 			<legend>Search an ad : </legend>
 			<div>
-				<label>contains in description </label> <input type="text" size="50"
-					name="title" /> <br> <label>Price between </label> <input
-					type="number" min="0" size="50" name="priceBegin" step="any"
-					placeholder="in €" /> <label> and </label> <input type="number"
-					min="0" size="50" name="priceEnd" step="any" placeholder="in €" />
-				<br> <label>dates between </label> <input type="date" size="50"
-					name="dateDebut" /> <label> and </label> <input type="date"
-					size="50" name="dateFin" /> <br> <label>You know the
-					person which posted it ? </label> <input type="text" size="50" name="email" />
+				<label for="keywords">Keywords</label> <input type="text" size="50"
+					name="keywords" id="keywords" /> <br> <label for="pricemin">Price
+					between </label> <input type="number" min="0" size="50" name="pricemin"
+					id="pricemin" step="any" placeholder="0.0 €" /> <label
+					for="pricemax"> and </label> <input type="number" min="0" size="50"
+					name="pricemax" id="pricemax" step="any" placeholder="0.0 €" /> <br>
+				<label for="datemin">dates between </label> <input type="date"
+					size="50" name="datemin" id="datemin" /> <label for="datemax">
+					and </label> <input type="date" size="50" name="datemax" id="datemax" /> <br>
+				<label for="seller">Seller's name </label> <input type="text"
+					size="50" name="seller" id="seller" />
+
 			</div>
-			<br> <input type="submit" value="search" onclick="searchAll()" />
+
+			<br> <input id="search" type="button" value="search" />
+
 		</fieldset>
+
 	</form>
+
 	<div id=searchResult></div>
-	<script type="text/javascript">
-		function searchAll() {
-	<%String s = request.getParameter("title");
-				String price1 = request.getParameter("priceBegin");
-				String price2 = request.getParameter("priceEnd");
-				String dateDebut = request.getParameter("dateDebut");
-				String dateFin = request.getParameter("dateFin");
-				String email = request.getParameter("email");
-				
-				query = "select from " + Ad.class.getName();
-				HashMap<String,Object> args = new HashMap<String,Object>();
-				ArrayList<String> newQuery = new ArrayList<String>();
-				ArrayList<String> parameters = new ArrayList<String>();
-								
-				if(s != "" && s != null){
-					parameters.add("String titre");
-					newQuery.add("title == titre");
-					args.put("titre",s);
-				}
-				
-				if(price1 != null && price1 != ""){
-					float un ;
-					try {
-						un = Float.parseFloat(price1);
-						args.put("min",un);
-						parameters.add("double min");
-						newQuery.add("price > min");
-					} catch (Exception e) {}
-				}
-				
-				if(price2 != null && price2 != ""){
-					float deux ;
-					try {
-						deux = Float.parseFloat(price2);
-						parameters.add("double max");
-						args.put("max",deux);
-						newQuery.add("price < max");
-					} catch (Exception e) {}
-				}
-				
-				if(dateDebut != null && dateDebut != ""){
-					Date debut ;
-					try {
-						debut = shortDF.parse(dateDebut);
-						parameters.add("Date debut");
-						args.put("debut",debut);
-						newQuery.add("date > debut");
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-				
-				if(dateFin != null && dateFin != ""){
-					Date fin ;
-					try {
-						fin = shortDF.parse(dateFin);
-						parameters.add("Date final");
-						args.put("final",fin);
-						newQuery.add("date < final");
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-				
-				if(email != "" && email != null){
-					parameters.add("String auth");
-					args.put("auth",email);
-					newQuery.add("author == auth");
-				}
-				
-				for (int i = 0; i < newQuery.size(); i++ ){
-					if( i == 0){
-						query = query + " WHERE " + newQuery.get(i) ;
-					} else {
-						query = query + " && " + newQuery.get(i) ;
-					}
-				}
-				
-				Query q = pm.newQuery(query);
-				String par = "";
-				for (int j = 0; j < parameters.size(); j++ ){
-					if(j == 0){
-						par = parameters.get(0);
-					} else {
-						par = par + " , " + parameters.get(j);
-					}
-				}
-				q.declareParameters(par);				
-				q.declareImports("import java.util.Date");
-				ads = (List<Ad>) q.executeWithMap(args);%>
-		document.getElementById('searchResult').innerHTML = '<table border="1" cellpadding="0" cellspacing="0">'
-					+ '<tr><th>Descriptif</th><th>Auteur</th><th>Date</th><th>Prix</th></tr>';
-	<%for (Ad a : ads) {
-	%>	
-		document.getElementById('searchResult').innerHTML += '<tr><td>'<%=a.getTitle()%>'</td><td>'<%=a.getAuthor().getNickname()%>'</td><td>'<%=a.getDate()%>'</td><td>'<%=a.getPrice()%>'</td></tr>';
-	<%}%>
-		pm.close();
-		}
-	</script>
 </body>
 </html>
