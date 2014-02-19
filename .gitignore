@@ -1,6 +1,10 @@
 *.class
-
-# Package Files #
-*.jar
-*.war
-*.ear
+war/WEB-INF/lib/
+war/WEB-INF/classes/
+war/WEB-INF/appengine-generated/
+.classpath
+.project
+.settings/com.google.appengine.eclipse.core.prefs
+.settings/com.google.gdt.eclipse.core.prefs
+.settings/org.eclipse.jdt.core.prefs
+.settings/org.eclipse.wst.common.project.facet.core.xml
