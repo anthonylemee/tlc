@@ -109,7 +109,6 @@
 			url : '/deleteAds',
 			type : 'POST',
 			success : function() {
-				alert("ok");
 				var rows = row.parentNode.parentNode;
 				rows.parentNode.removeChild(rows);
 			},
