@@ -117,6 +117,21 @@
 		});
 	}
 
+	function perfTest(){
+		$.ajax({
+			data : {},
+			dataType : 'text',
+			url : '/testPerfs',
+			type : 'POST',
+			success : function() {
+				location.reload();
+			},
+			error : function() {
+				alert(' :( ');
+			}
+		});
+	}
+
 	function addAllAds(){
 
 		var tabTitle = new Array();
@@ -307,6 +322,7 @@
 	<div>
 		<input type="button" value="Another Ad ?" onclick="addField()" />
 		<input id="addAllBtn" type="submit" value="AddAll" disabled="disabled" onclick="addAllAds()"/>
+		<input id="perf" type="submit" value="perfTest" onclick="perfTest()"/>
 	</div>
 	<br>
 	<br>
@@ -323,15 +339,10 @@
 				<label for="datemin">dates between </label> <input type="date"
 					size="50" name="datemin" id="datemin" /> <label for="datemax">
 					and </label> <input type="date" size="50" name="datemax" id="datemax" /> &nbsp;
-
 			</div>
-
 			<br> <input id="search" type="button" value="search" />
-
 		</fieldset>
-
 	</form>
-
 	<div id=searchResult></div>
 </body>
 </html>
