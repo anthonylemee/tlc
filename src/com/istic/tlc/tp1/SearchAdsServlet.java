@@ -2,13 +2,12 @@ package com.istic.tlc.tp1;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
-import java.util.TimeZone;
 
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
@@ -29,7 +28,6 @@ public class SearchAdsServlet extends HttpServlet {
 			throws IOException {
 
 		// Récupération des filtres de recherche
-		String seller = request.getParameter("seller");
 		String keyWords = request.getParameter("keywords");
 		String priceMin = request.getParameter("pricemin");
 		String priceMax = request.getParameter("pricemax");
@@ -65,25 +63,6 @@ public class SearchAdsServlet extends HttpServlet {
 
 		} // if keyWords
 
-		// Filtre sur l'auteur (ie. le vendeur)
-		if (!Strings.isNullOrEmpty(seller)) {
-
-			if (ads.size() == 0) {
-
-				String query = "author == '" + seller + "'";
-				// On les ajoute à l'ensemble des Ad précédemment trouvées
-				ads.addAll(this.executeQuery(query, pm));
-
-			} else {
-				for (Ad ad : ads) {
-					if (!ad.getAuthor().equals(seller)) {
-						ads.remove(ad);
-					}
-				}
-			}
-
-		} // if seller
-
 		// Filtre sur le prix
 		if (!Strings.isNullOrEmpty(priceMin)
 				&& !Strings.isNullOrEmpty(priceMax)) {
@@ -94,48 +73,56 @@ public class SearchAdsServlet extends HttpServlet {
 			if (ads.size() == 0) {
 				String query = "price >= " + pricemin + " && price <= "
 						+ pricemax;
-				System.out.println(query);
+				System.out.println("SIZE 0 : " + query);
 				// On les ajoute à l'ensemble des Ad précédemment trouvées
 				ads.addAll(this.executeQuery(query, pm));
 			} else {
 				System.out.println(priceMin);
 				System.out.println(priceMax);
-				for (Ad ad : ads) {
+				for (Iterator<Ad> itAds = ads.iterator(); itAds.hasNext();) {
+					Ad ad = itAds.next();
 					if (!(ad.getPrice() >= pricemin && ad.getPrice() <= pricemax)) {
-						ads.remove(ad);
+						itAds.remove();
 					}
 				}
 			}
 
 		} // if price
-		
+
 		// Filtre sur la date
-		if (!Strings.isNullOrEmpty(priceMin)
-				&& !Strings.isNullOrEmpty(priceMax)) {
-			
+		if (!Strings.isNullOrEmpty(dateMin) && !Strings.isNullOrEmpty(dateMax)) {
+
 			try {
-				
-				SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+				SimpleDateFormat simpleDateFormat = new SimpleDateFormat(
+						"yyyy-MM-dd");
 				Date datemin = simpleDateFormat.parse(dateMin);
 				Date datemax = simpleDateFormat.parse(dateMax);
 
 				System.out.println(datemin);
-				
+
 				if (ads.size() == 0) {
 
-					String query = "date >= " + datemin + " && date <= "
-							+ datemax;
+					String query1 = "date >= :datemin";
+					String query2 = "date <= :datemax";
+					System.out.println("SIZE 0 : ");
+					// recherche et croisements des résultats
+					List<Ad> adsFounded = this.executeQueryParameters(query1,
+							pm, datemin);
+					List<Ad> adsFounded2 = this.executeQueryParameters(query2,
+							pm, datemax);
 
 					// On les ajoute à l'ensemble des Ad précédemment trouvées
-					ads.addAll(this.executeQuery(query, pm));
+					ads.addAll(this.intersection(adsFounded, adsFounded2));
 
 				} else {
 
-					for (Ad ad : ads) {
-						// if (!(ad.getPrice() >= pricemin && ad.getPrice() <=
-						// pricemax)) {
-						// ads.remove(ad);
-						// }
+					for (Iterator<Ad> itAds = ads.iterator(); itAds.hasNext();) {
+						Ad ad = itAds.next();
+						if (ad.getDate().after(datemax)
+								|| ad.getDate().before(datemin)) {
+							ads.remove(ad);
+						}
 					}
 
 				}
@@ -172,8 +159,10 @@ public class SearchAdsServlet extends HttpServlet {
 
 	public List<Ad> executeQuery(String query, PersistenceManager pm) {
 		System.out.println("Execute query !");
+		Query q = pm.newQuery(Ad.class, query);
+		q.declareImports("import java.util.Date");
 		@SuppressWarnings("unchecked")
-		List<Ad> findedAds = (List<Ad>) pm.newQuery(Ad.class, query).execute();
+		List<Ad> findedAds = (List<Ad>) q.execute();
 		return findedAds;
 	}
 
@@ -181,8 +170,37 @@ public class SearchAdsServlet extends HttpServlet {
 			PersistenceManager pm) {
 		System.out.println("Execute filter !");
 		Query query = pm.newQuery(Ad.class, filter);
+		query.declareImports("import java.util.Date");
 		@SuppressWarnings("unchecked")
 		List<Ad> findedAds = (List<Ad>) query.execute();
 		return findedAds;
 	}
+
+	public List<Ad> executeQueryParameters(String filter,
+			PersistenceManager pm, Object parameter) {
+		System.out.println("Execute filter parameter !");
+		Query query = pm.newQuery(Ad.class, filter);
+		query.declareImports("import java.util.Date");
+		@SuppressWarnings("unchecked")
+		List<Ad> findedAds = (List<Ad>) query.execute(parameter);
+		return findedAds;
+	}
+
+	public List<Ad> intersection(List<Ad> list1, List<Ad> list2) {
+		List<Ad> list = new ArrayList<Ad>();
+
+		for (Ad ad1 : list1) {
+
+			for (Ad ad2 : list2) {
+
+				if (ad1.getKey() == ad2.getKey()) {
+					list.add(ad1);
+					break;
+				}
+			}
+		}
+
+		return list;
+	}
+
 }

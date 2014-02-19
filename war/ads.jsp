@@ -43,7 +43,6 @@
 											priceMax = $("#pricemax").val();
 											dateMin = $("#datemin").val();
 											dateMax = $("#datemax").val();
-											sellerName = $("#seller").val();
 
 											$
 													.ajax({
@@ -53,7 +52,6 @@
 															pricemax : priceMax,
 															datemin : dateMin,
 															datemax : dateMax,
-															seller : sellerName
 														},
 														dataType : 'text',
 														url : '/searchAds',
@@ -163,7 +161,7 @@
 		String query = "select from " + Ad.class.getName()
 				+ " order by date desc range 0,5";
 		List<Ad> ads = (List<Ad>) pm.newQuery(query).execute();
-		DateFormat shortDF = new SimpleDateFormat("yyyy-mm-dd");
+		DateFormat shortDF = new SimpleDateFormat("yyyy-MM-dd");
 
 		if (ads.isEmpty()) {
 	%>
@@ -191,7 +189,7 @@
 						} else
 					%><%=a.getAuthor().getNickname()%>
 				</td>
-				<td><%=a.getDate()%></td> <!-- shortDF.format(a.getDate()) -->
+				<td><%=shortDF.format(a.getDate())%></td> <!-- shortDF.format(a.getDate()) -->
 				<td><%=a.getPrice()%> €</td>
 				
 			</tr>
@@ -227,16 +225,14 @@
 			<legend>Search an ad : </legend>
 			<div>
 				<label for="keywords">Keywords</label> <input type="text" size="50"
-					name="keywords" id="keywords" /> <br> <label for="pricemin">Price
+					name="keywords" id="keywords" /> &nbsp; <label for="pricemin">Price
 					between </label> <input type="number" min="0" size="50" name="pricemin"
 					id="pricemin" step="any" placeholder="0.0 €" /> <label
 					for="pricemax"> and </label> <input type="number" min="0" size="50"
-					name="pricemax" id="pricemax" step="any" placeholder="0.0 €" /> <br>
+					name="pricemax" id="pricemax" step="any" placeholder="0.0 €" /> &nbsp;
 				<label for="datemin">dates between </label> <input type="date"
 					size="50" name="datemin" id="datemin" /> <label for="datemax">
-					and </label> <input type="date" size="50" name="datemax" id="datemax" /> <br>
-				<label for="seller">Seller's name </label> <input type="text"
-					size="50" name="seller" id="seller" />
+					and </label> <input type="date" size="50" name="datemax" id="datemax" /> &nbsp;
 
 			</div>
 
