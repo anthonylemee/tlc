@@ -123,7 +123,8 @@
 			dataType : 'text',
 			url : '/testPerfs',
 			type : 'POST',
-			success : function() {
+			success : function(res) {
+				alert(res);
 				location.reload();
 			},
 			error : function() {
