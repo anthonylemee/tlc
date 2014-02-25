@@ -82,10 +82,10 @@
 												// Une fois le tableau construit on l'incorpore dans la div prévue
 												$('#searchResult')
 														.append(
-																'<div class="panel panel-default"><div class="panel-heading">Results search :</div><table class="table">'
+																'<div class="panel panel-default"><div class="panel-heading">Results search :</div><div class="table-responsive"><table class="table">'
 																		+ '<tr><th>Descriptif</th><th>Auteur</th><th>Date</th><th>Prix</th></tr></div>'
 																		+ tableContent
-																		+ '</table>');
+																		+ '</div></table>');
 
 											},
 											error : function() {
@@ -166,7 +166,7 @@
 	}
 
 	$(document).ready(function() {
-		document.getElementById('addAllBtn').disabled= true;
+		document.getElementById('addAllBtn').disabled = true;
 		i = 1;
 		}
 	);
@@ -190,13 +190,14 @@
 		   inputP.setAttribute('name','price'+i);
 		   inputP.setAttribute('id','price'+i);
 		   inputP.setAttribute('size','50');
-		   inputP.setAttribute('placeholder','in €');
+		   inputP.setAttribute('placeholder','0.0 euros');
 		   inputP.setAttribute('value','');
 		   
-		   document.getElementById('otherAds').appendChild(document.createTextNode('Title'));
+		   document.getElementById('otherAds').appendChild(document.createTextNode('Title '));
 		   document.getElementById('otherAds').appendChild(inputT);
-		   document.getElementById('otherAds').appendChild(document.createTextNode('Price'));
+		   document.getElementById('otherAds').appendChild(document.createTextNode(' Price '));
 		   document.getElementById('otherAds').appendChild(inputP);
+		   document.getElementById('otherAds').appendChild(document.createElement('br'));
 		   document.getElementById('otherAds').appendChild(document.createElement('br'));
 		   document.getElementById('addAllBtn').disabled= false;
 		   i ++;
@@ -210,7 +211,7 @@
 
 	<%
 		UserService userService = UserServiceFactory.getUserService();
-		SimpleDateFormat formatter=new SimpleDateFormat("yyyy-MM-dd");
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 		User user = userService.getCurrentUser();
 		if (user != null) {
 	%>
@@ -255,95 +256,130 @@
 			</div>
 		</div>
 	</nav>
+
 	<%
 		}
 	%>
+	<div class="panel panel-info">
 
-	<%
-		PersistenceManager pm = PMF.get().getPersistenceManager();
-		String query = "select from " + Ad.class.getName()
-				+ " order by date desc";
-		List<Ad> ads = (List<Ad>) pm.newQuery(query).execute();
-		DateFormat shortDF = new SimpleDateFormat("yyyy-MM-dd");
+		<div class="panel-heading">
+			<h3 class="panel-title">Create new ads</h3>
+		</div>
 
-		if (ads.isEmpty()) {
-	%>
-	<p>There are no ads which have been added</p>
-	<%
-		} else {
-	%>
-	<div class="panel panel-default">
-		<div class="panel-heading">List of Ads :</div>
-			<table id="tableDeb" class="tableDeb">
-				<tr>
-					<th>Descriptif</th>
-					<th>Auteur</th>
-					<th>Date</th>
-					<th>Prix</th>
-				</tr>
-				<%
-					for (Ad a : ads) {
-				%><tr>
-					<td><%=a.getTitle()%></td>
-					<td>
-						<%
-							if (a.getAuthor() == null) {
-						%>Anonymous<%
-							} else
-						%><%=a.getAuthor().getNickname()%>
-				</td>
-				<td><%=shortDF.format(a.getDate())%></td> 
-				<!-- shortDF.format(a.getDate()) -->
-				<td><%=a.getPrice()%> €</td>
-					<td><input id="delete" type="button" value="delete" onclick='del(this,<%=a.getKey().getId()%>)'/></td>
-				</tr>
-				<%
-					}
-				%>
-			</table>
-	</div>
-	<%
-		}
-	%>
+		<div class="panel-body">
 
-	<br>
-	<br>
-	<form action="/addAds" method="post">
-		<fieldset>
-			<legend>Save an ad : </legend>
-			<div>
-				<label>Title</label> <input type="text" size="50"
-					required="required" id="title0" name="title0" /> <label>Price</label> <input
-					type="number" id="price0" required="required" min="0" size="50" name="price0"
-					step="any" placeholder="in €" /> <input type="submit" value="Add" />
+			<form role="form" action="/addAds" method="post" class="form-inline">
+				<div class="form-group">
+					<label>Title</label> <input type="text" size="50"
+						required="required" id="title0" name="title0" />
+				</div>
+				<div class="form-group">
+					<label>Price</label> <input type="number" id="price0"
+						required="required" min="0" size="50" name="price0" step="any"
+						placeholder="0.0 euros" />
+				</div>
+				&nbsp; <input class="btn btn-primary" type="submit"
+					value="Add this ad" /> &nbsp; <input id="perf" type="submit"
+					class="btn btn-warning" value="Launch performance testing"
+					onclick="perfTest()" />
+			</form>
+			<div id="otherAds"></div>
+			<div id="controlPanelBottom">
+				<br /> <input type="button" class="btn btn-success"
+					value="One more ad" onclick="addField()" /> &nbsp; <input
+					id="addAllBtn" type="submit" value="Add all ads created"
+					disabled="disabled" class="btn btn-primary" onclick="addAllAds()" />
 			</div>
-		</fieldset>
-	</form>
-	<div id="otherAds"></div>
-	<div>
-		<input type="button" value="Another Ad ?" onclick="addField()" />
-		<input id="addAllBtn" type="submit" value="AddAll" disabled="disabled" onclick="addAllAds()"/>
-		<input id="perf" type="submit" value="perfTest" onclick="perfTest()"/>
+		</div>
 	</div>
-	<br>
-	<br>
-	<form>
-		<fieldset>
-			<legend>Search an ad : </legend>
-			<div>
-				<label for="keywords">Keywords</label> <input type="text" size="50"
-					name="keywords" id="keywords" /> &nbsp; <label for="pricemin">Price
-					between </label> <input type="number" min="0" size="50" name="pricemin"
-					id="pricemin" step="any" placeholder="0.0 €" /> <label
-					for="pricemax"> and </label> <input type="number" min="0" size="50"
-					name="pricemax" id="pricemax" step="any" placeholder="0.0 €" /> &nbsp;
-				<label for="datemin">dates between </label> <input type="date"
-					size="50" name="datemin" id="datemin" /> <label for="datemax">
-					and </label> <input type="date" size="50" name="datemax" id="datemax" /> &nbsp;
+	<div class="panel panel-info">
+		<div class="panel-heading">
+			<h3 class="panel-title">List of ads</h3>
+		</div>
+		<div class="panel-body">
+			<%
+				PersistenceManager pm = PMF.get().getPersistenceManager();
+				String query = "select from " + Ad.class.getName()
+						+ " order by date desc";
+				List<Ad> ads = (List<Ad>) pm.newQuery(query).execute();
+				DateFormat shortDF = new SimpleDateFormat("yyyy-MM-dd");
+
+				if (ads.isEmpty()) {
+			%>
+			<p>There are no ads which have been added</p>
+			<%
+				} else {
+			%>
+			<div class="table-responsive">
+				<table class="table">
+					<tr>
+						<th>Descriptif</th>
+						<th>Auteur</th>
+						<th>Date</th>
+						<th>Prix</th>
+					</tr>
+					<%
+						for (Ad a : ads) {
+					%><tr>
+						<td><%=a.getTitle()%></td>
+						<td>
+							<%
+								if (a.getAuthor() == null) {
+							%>Anonymous<%
+								} else
+							%><%=a.getAuthor().getNickname()%>
+						</td>
+						<td><%=shortDF.format(a.getDate())%></td>
+						<!-- shortDF.format(a.getDate()) -->
+						<td><%=a.getPrice()%> €</td>
+						<td><input id="delete" type="button" class="btn btn-danger"
+							value="delete" onclick='del(this,<%=a.getKey().getId()%>)' /></td>
+					</tr>
+					<%
+						}
+					%>
+				</table>
 			</div>
-			<br> <input id="search" type="button" value="search" />
-		</fieldset>
-	</form>
-	<div id=searchResult></div>
+			<%
+				}
+			%>
+
+		</div>
+	</div>
+	<div class="panel panel-info">
+
+		<div class="panel-heading">
+			<h3 class="panel-title">Search an ad</h3>
+		</div>
+
+		<div class="panel-body">
+			<form role="form" class="form-inline">
+				<div class="form-group">
+					<label for="keywords">keywords</label> <input type="text" size="20"
+						name="keywords" id="keywords" />
+				</div>
+				<div class="form-group">
+					<label for="pricemin">price between </label> <input type="number"
+						min="0" size="10" name="pricemin" id="pricemin" step="any"
+						placeholder="0.0 euros" />
+				</div>
+				<div class="form-group">
+					<label for="pricemax"> and </label> <input type="number" min="0"
+						size="10" name="pricemax" id="pricemax" step="any"
+						placeholder="0.0 euros" />
+				</div>
+				<div class="form-group">
+					<label for="datemin">dates between </label> <input type="date"
+						size="10" name="datemin" id="datemin" />
+				</div>
+				<div class="form-group">
+					<label for="datemax"> and </label> <input type="date" size="20"
+						name="datemax" id="datemax" />
+				</div>
+				<input id="search" type="button" value="Search" class="btn btn-primary" />
+			</form>
+			<div id=searchResult></div>
+		</div>
+	</div>
 </body>
 </html>
