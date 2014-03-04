@@ -28,6 +28,8 @@
 <!-- Latest compiled and minified JavaScript -->
 <script
 	src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+<script src="http://code.highcharts.com/highcharts.js"></script>
+<script src="http://code.highcharts.com/modules/exporting.js"></script>
 <script>
 	$(document)
 			.ready(
@@ -118,17 +120,38 @@
 	}
 
 	function perfTest(){
+		$('#loader').html('<img src="/loader.gif">');
 		$.ajax({
 			data : {},
 			dataType : 'text',
 			url : '/testPerfs',
 			type : 'POST',
 			success : function(res) {
+				$('#loader').html('');
 				alert(res);
 				location.reload();
 			},
 			error : function() {
-				alert(' :( ');
+				alert(' échec ! ');
+				$('#loader').html('');
+			}
+		});
+	}
+
+	function resetBDD(){
+		$('#loader').html('<img src="/loader.gif">');
+		$.ajax({
+			data : {},
+			dataType : 'text',
+			url : '/resetBDD',
+			type : 'POST',
+			success : function(res) {
+				$('#loader').html('');
+				location.reload();
+			},
+			error : function() {
+				alert(' échec ! ');
+				$('#loader').html('');
 			}
 		});
 	}
@@ -205,6 +228,159 @@
 		   alert(e);
 		}
 	}
+
+	$(function () {
+	    $(document).ready(function() {
+	        Highcharts.setOptions({
+	            global: {
+	                useUTC: false
+	            }
+	        });
+	    
+	        var chart;
+	        $('#container').highcharts({
+	            chart: {
+	                type: 'spline',
+	                animation: Highcharts.svg, // don't animate in old IE
+	                marginRight: 10,
+	                events: {
+	                    load: function() {
+	    
+	                        // set up the updating of the chart each second
+	                        var series = this.series[0];
+	                        var series2 = this.series[1];
+	                        setInterval(function() {
+	                            timeDeb = (new Date()).getTime();
+	                            $.ajax({
+									data : {
+										title0 : 'perfTest',
+										price0 : '200'
+									},
+									dataType : 'text',
+									url : '/addAdsTesting',
+									type : 'POST',
+									success : function(
+											key) {
+												timeFin = (new Date()).getTime();
+												var x = timeDeb, y = timeFin - timeDeb;
+
+				                               	timeDeb2 = (new Date()).getTime();
+				                               	$.ajax({
+													data : {
+														id : key,
+													},
+													dataType : 'text',
+													url : '/deleteAds',
+													type : 'POST',
+													success : function(
+															key) {
+																timeFin2 = (new Date()).getTime();
+																var x2 = timeDeb2, y2 = timeFin2 - timeDeb2;
+								                               	series2.addPoint([x2, y2, '#c63733'], true, true);
+															},
+															error : function() {
+																
+																series2.addPoint([0, 0], true, true);
+																
+															}});
+				                               	series.addPoint([x, y, '#6a8ca5'], true, true);
+											},
+											error : function() {
+												
+												series.addPoint([0, 0], true, true);
+												
+											}});
+	                        }, 2000);
+	                    }
+	                }
+	            },
+	            title: {
+	                text: 'Performances in real time'
+	            },
+	            xAxis: {
+	                type: 'datetime',
+	                tickPixelInterval: 150
+	            },
+	            yAxis: {
+	                title: {
+	                    text: 'Duration in milliseconds'
+	                },
+	                plotLines: [{
+	                    value: 0,
+	                    width: 0,
+	                    color: '#6a8ca5'
+	                },{
+	                    value: 0,
+	                    width: 0,
+	                    color: '#c63733'
+	                }]
+	            },
+	            tooltip: {
+	                formatter: function() {
+	                        return '<b>'+ this.series.name +'</b><br/>'+
+	                        Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) +'<br/>'+
+	                        Highcharts.numberFormat(this.y, 2) +'ms' ;
+	                }
+	            },
+	            legend: {
+	                
+	                borderWidth: 0
+	            },
+	            exporting: {
+	                enabled: false
+	            },
+	            colors: [
+	                     '#6a8ca5', 
+	                     '#c63733', 
+	                     '#8bbc21', 
+	                     '#910000', 
+	                     '#1aadce', 
+	                     '#492970',
+	                     '#f28f43', 
+	                     '#77a1e5', 
+	                     '#c42525', 
+	                     '#a6c96a'
+	                  ],
+	            series: [{
+	                name: 'Ajout',
+	                data: (function() {
+	                    // generate an array of random data
+	                    var data = [],
+	                        time = (new Date()).getTime(),
+	                        i;
+	    
+	                    for (i = -40; i <= 0; i++) {
+	                        data.push({
+	                            x: time + i * 1000,
+	                            y: null,
+	                            color: '#6a8ca5'
+	                        });
+	                    }
+	                    return data;
+	                })()
+	            },{
+	                name: 'Supression',
+	                data: (function() {
+	                    // generate an array of random data
+	                    var data = [],
+	                        time = (new Date()).getTime(),
+	                        i;
+	    
+	                    for (i = -40; i <= 0; i++) {
+	                        data.push({
+	                            x: time + i * 1000,
+	                            y: null,
+	                            color: '#c63733'
+	                        });
+	                    }
+	                    return data;
+	                })()
+	            }]
+	        });
+	    });
+	    
+	});
+	
 </script>
 </head>
 <body>
@@ -282,6 +458,9 @@
 					value="Add this ad" /> &nbsp; <input id="perf" type="submit"
 					class="btn btn-warning" value="Launch performance testing"
 					onclick="perfTest()" />
+					 &nbsp; <input id="reset" type="submit"
+					class="btn btn-success" value="ResetBDD"
+					onclick="resetBDD()" /> <span id="loader"></span>
 			</form>
 			<div id="otherAds"></div>
 			<div id="controlPanelBottom">
@@ -290,8 +469,15 @@
 					id="addAllBtn" type="submit" value="Add all ads created"
 					disabled="disabled" class="btn btn-primary" onclick="addAllAds()" />
 			</div>
+
 		</div>
 	</div>
+
+	<div id="container"
+		style="min-width: 400px; max-width: 600px; height:200px; margin: 0 auto"></div>
+
+	<br />
+
 	<div class="panel panel-info">
 		<div class="panel-heading">
 			<h3 class="panel-title">List of ads</h3>
@@ -309,6 +495,13 @@
 			<p>There are no ads which have been added</p>
 			<%
 				} else {
+
+					boolean firstMeet = true;
+					for (Ad a : ads) {
+						if (a.getTitle().equals("perfTest"))
+							continue;
+						if (firstMeet) {
+							firstMeet = false;
 			%>
 			<div class="table-responsive">
 				<table class="table">
@@ -317,9 +510,10 @@
 						<th>Auteur</th>
 						<th>Date</th>
 						<th>Prix</th>
+						<th>Action</th>
 					</tr>
 					<%
-						for (Ad a : ads) {
+						}
 					%><tr>
 						<td><%=a.getTitle()%></td>
 						<td>
@@ -337,6 +531,11 @@
 					</tr>
 					<%
 						}
+							if (firstMeet) {
+					%>
+					<p>There are no ads which have been added</p>
+					<%
+						}
 					%>
 				</table>
 			</div>
@@ -346,6 +545,7 @@
 
 		</div>
 	</div>
+
 	<div class="panel panel-info">
 
 		<div class="panel-heading">
@@ -376,7 +576,8 @@
 					<label for="datemax"> and </label> <input type="date" size="20"
 						name="datemax" id="datemax" />
 				</div>
-				<input id="search" type="button" value="Search" class="btn btn-primary" />
+				<input id="search" type="button" value="Search"
+					class="btn btn-primary" />
 			</form>
 			<div id=searchResult></div>
 		</div>

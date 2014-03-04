@@ -25,6 +25,14 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
         <servlet-class>com.istic.tlc.tp1.AddAdsServlet</servlet-class>
     </servlet>
     <servlet-mapping>
+        <servlet-name>addAdsTesting</servlet-name>
+        <url-pattern>/addAdsTesting</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>addAdsTesting</servlet-name>
+        <servlet-class>com.istic.tlc.tp1.AddAdsTestingServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
         <servlet-name>addAds</servlet-name>
         <url-pattern>/addAds</url-pattern>
     </servlet-mapping>
@@ -59,6 +67,14 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
     <servlet-mapping>
         <servlet-name>testPerfs</servlet-name>
         <url-pattern>/testPerfs</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>resetBDD</servlet-name>
+        <servlet-class>com.istic.tlc.tp1.ResetBDDServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>resetBDD</servlet-name>
+        <url-pattern>/resetBDD</url-pattern>
     </servlet-mapping>
 	<welcome-file-list>
 		<welcome-file>ads.jsp</welcome-file>

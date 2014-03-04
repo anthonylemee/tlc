@@ -32,7 +32,7 @@ public class AddAdsServlet extends HttpServlet {
 		Date date = new Date();
 
 		Ad a = new Ad(user, title, date, price);
-
+		
 		PersistenceManager pm = PMF.get().getPersistenceManager();
 		try {
 			pm.makePersistent(a);

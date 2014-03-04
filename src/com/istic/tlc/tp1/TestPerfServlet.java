@@ -19,7 +19,7 @@ import com.google.appengine.api.users.UserServiceFactory;
 public class TestPerfServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
-	private static int NB_TRANSACTION = 100;
+	private static int NB_TRANSACTION = 1000;
 	private Date fin;
 	private Ad a;
 	private Date d;
